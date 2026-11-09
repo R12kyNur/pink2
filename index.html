@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Untuk Nana 💗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#fff0f4;--bg2:#ffd3df;--rose:#e0426f;--deep:#6b1d3a;--soft:#f7a4bb;--paper:#fffafb;box-sizing:border-box}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;color:var(--deep);font-family:Lora,Georgia,serif;background:linear-gradient(160deg,var(--bg1),var(--bg2));-webkit-tap-highlight-color:transparent}
+#petals{position:fixed;inset:0;pointer-events:none;z-index:0}
+.petal{position:absolute;top:-30px;color:var(--soft);opacity:.7;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(112vh) rotate(360deg)}}
+#gate{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;background:linear-gradient(160deg,var(--bg1),var(--bg2));transition:opacity .8s}
+#gate.off{opacity:0;pointer-events:none}
+#gate h1{font:700 2.6rem/1.1 Caveat,cursive;margin:0}
+#gate p{margin:0;max-width:280px;line-height:1.6}
+.btn{border:0;border-radius:999px;padding:13px 28px;font:700 1.35rem Caveat,cursive;background:var(--rose);color:#fff;cursor:pointer;box-shadow:0 8px 20px rgba(224,66,111,.35);transition:transform .2s}
+.btn:active{transform:scale(.95)}
+#app{position:relative;z-index:1;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom))}
+#top{display:flex;justify-content:space-between;align-items:center;font:500 1.2rem Caveat,cursive}
+#mute{background:#fff;border:1px solid var(--soft);border-radius:50%;width:38px;height:38px;font-size:1rem;cursor:pointer}
+#deck{flex:1;position:relative;min-height:0;margin:10px 0}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transform:translateX(40px) rotate(1.2deg);pointer-events:none;transition:opacity .6s,transform .6s;background:var(--paper);border-radius:6px 22px 6px 22px;padding:22px 22px 26px;box-shadow:0 14px 40px rgba(180,50,90,.22);overflow:auto}
+.slide.on{opacity:1;transform:none;pointer-events:auto}
+.slide.out{transform:translateX(-40px) rotate(-1.2deg)}
+.photo{height:36%;min-height:120px;border-radius:14px;background:linear-gradient(135deg,#ffe0ea,#f7a4bb);display:flex;align-items:center;justify-content:center;font-size:3.6rem;overflow:hidden;flex:none}
+.photo img{width:100%;height:100%;object-fit:cover}
+.slide h2{font:700 2.1rem/1.1 Caveat,cursive;color:var(--rose);margin:16px 0 8px}
+.slide p{margin:0 0 10px;line-height:1.7;font-size:.98rem}
+.sign{margin-top:auto;font:500 1.3rem Caveat,cursive;text-align:right;color:var(--rose)}
+#bar{display:flex;align-items:center;justify-content:space-between}
+.dots{display:flex;gap:8px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--soft);transition:.3s}
+.dots i.on{background:var(--rose);width:26px;border-radius:9px}
+.nav{background:none;border:1px solid var(--rose);color:var(--rose);border-radius:999px;padding:8px 18px;font:700 1.15rem Caveat,cursive;cursor:pointer}
+.nav[disabled]{opacity:.3}
+#go{display:none}
+@media (prefers-reduced-motion:reduce){.petal{animation:none}.slide{transition:none}}
+</style>
+</head>
+<body>
+<div id="petals"></div>
+
+<div id="gate">
+  <div style="font-size:3rem">💌</div>
+  <h1>Ada cerita buat kamu, Nana</h1>
+  <p>Nyalakan suara, lalu baca pelan-pelan ya.</p>
+  <button class="btn" id="open">Buka ceritanya</button>
+</div>
+
+<div id="app">
+  <div id="top"><span>Untuk Nana 💗</span><button id="mute" aria-label="Matikan musik">🔊</button></div>
+  <div id="deck"></div>
+  <div id="bar">
+    <button class="nav" id="prev">Kembali</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav" id="next">Lanjut</button>
+    <button class="btn" id="go">Lanjut ke jawabanmu 💍</button>
+  </div>
+</div>
+
+<script>
+/* ====== EDIT CERITAMU DI SINI ======
+   foto: nama file gambar di folder yang sama (opsional, kalau tidak ada tampil emoji)
+   Tulis dengan kata-katamu sendiri, teks di bawah hanya contoh. */
+const NEXT_PAGE = 'final.html';   // file bagian akhir (index.html lama kamu)
+const MUSIC_FILE = 'musik.mp3';   // lagu romantis pilihanmu (opsional)
+const SLIDES = [
+  {emo:'🌸',foto:'foto1.jpg',judul:'Pertama kali kita satu kelas',
+   teks:['Awalnya kamu hanya teman sekelas di Teknik Informatika. Aku belum tahu bahwa hari itu akan jadi awal dari sesuatu yang besar.','Tulis di sini momen pertama kamu melihat Nana: di mana, jam berapa, apa yang kamu rasakan.']},
+  {emo:'👀',foto:'foto2.jpg',judul:'Mulai memperhatikanmu',
+   teks:['Tanpa sadar aku jadi lebih sering mencari kamu di kelas. Caramu tertawa dan caramu mengerjakan tugas jadi hal kecil yang aku ingat.','Ceritakan hal kecil dari Nana yang pertama kali bikin kamu tertarik.']},
+  {emo:'💭',foto:'foto3.jpg',judul:'Saat perasaan ini tumbuh',
+   teks:['Makin lama aku sadar, ini bukan sekadar kagum. Aku merasa tenang kalau ada kamu, dan hariku terasa kurang kalau tidak melihatmu.','Ceritakan kapan kamu yakin bahwa kamu benar-benar sayang.']},
+  {emo:'💗',foto:'foto4.jpg',judul:'Hari ini aku berani bilang',
+   teks:['Aku sudah lama menyimpan ini. Hari ini aku ingin jujur, tanpa tekanan, dengan hati yang tulus.','Ada satu pertanyaan yang ingin kuajukan. Bacalah sampai akhir ya, Nana.'],ttd:'Rizky'}
+];
+
+const deck=document.getElementById('deck'),dots=document.getElementById('dots');
+SLIDES.forEach((s,i)=>{
+  const d=document.createElement('section');d.className='slide';
+  d.innerHTML=`<div class="photo"><img src="${s.foto}" alt="" onerror="this.remove()"><span>${s.emo}</span></div><h2>${s.judul}</h2>${s.teks.map(t=>`<p>${t}</p>`).join('')}${s.ttd?`<div class="sign">— ${s.ttd}</div>`:''}`;
+  const img=d.querySelector('img');img.onload=()=>d.querySelector('.photo span').remove();
+  deck.appendChild(d);dots.appendChild(document.createElement('i'));
+});
+const sl=[...deck.children],dt=[...dots.children],prev=document.getElementById('prev'),next=document.getElementById('next'),go=document.getElementById('go');
+let cur=0;
+function show(n){
+  sl[cur].classList.remove('on');sl[cur].classList.add('out');
+  const old=cur;setTimeout(()=>sl[old].classList.remove('out'),600);
+  cur=Math.max(0,Math.min(sl.length-1,n));
+  sl[cur].classList.remove('out');sl[cur].classList.add('on');
+  dt.forEach((d,i)=>d.classList.toggle('on',i===cur));
+  prev.disabled=cur===0;
+  const last=cur===sl.length-1;next.style.display=last?'none':'';go.style.display=last?'block':'none';
+}
+sl[0].classList.add('on');dt[0].classList.add('on');prev.disabled=true;go.style.display='none';
+prev.onclick=()=>show(cur-1);next.onclick=()=>show(cur+1);
+go.onclick=()=>{location.href=NEXT_PAGE};
+let tx=null;
+deck.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+deck.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)show(cur+(d<0?1:-1));tx=null});
+addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
+
+/* kelopak jatuh */
+const pe=document.getElementById('petals');
+for(let i=0;i<16;i++){const p=document.createElement('span');p.className='petal';p.textContent=['🌸','💗','✿','❀'][i%4];
+  p.style.left=Math.random()*100+'vw';p.style.fontSize=(12+Math.random()*14)+'px';
+  p.style.animationDuration=(9+Math.random()*10)+'s';p.style.animationDelay=(-Math.random()*15)+'s';pe.appendChild(p)}
+
+/* musik: pakai musik.mp3 kalau ada, kalau tidak pakai melodi lembut buatan browser */
+let audio=null,ctx=null,timer=null,muted=false,synthOn=false;
+function startSynth(){
+  if(synthOn)return;synthOn=true;
+  ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const master=ctx.createGain();master.gain.value=.16;master.connect(ctx.destination);
+  const ch=[[261.63,329.63,392,523.25],[196,246.94,293.66,392],[220,261.63,329.63,440],[174.61,220,261.63,349.23]];
+  const pat=[0,1,2,3,2,1,2,1];let step=0;
+  function note(f){const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;
+    o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.9,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+1.6);
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+1.7)}
+  timer=setInterval(()=>{const c=ch[Math.floor(step/8)%4];note(c[pat[step%8]]);if(step%8===0)note(c[0]/2);step++},420);
+}
+function startMusic(){
+  audio=new Audio(MUSIC_FILE);audio.loop=true;audio.volume=.6;
+  audio.addEventListener('error',startSynth);
+  audio.play().catch(startSynth);
+}
+document.getElementById('open').onclick=()=>{document.getElementById('gate').classList.add('off');startMusic()};
+document.getElementById('mute').onclick=function(){
+  muted=!muted;this.textContent=muted?'🔇':'🔊';
+  if(audio)audio.muted=muted;
+  if(ctx)muted?ctx.suspend():ctx.resume();
+};
+</script>
+</body>
+</html>

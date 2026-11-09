@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cincin Berlian – Seni Huruf 3D</title>
+<style>
+:root{--bg:#000;--fg:#d8d8d8;--dim:#6b6b6b;--accent:#ff6b8a;--kw:#c586c0;--fn:#dcdcaa;--num:#d7ba7d;--cm:#6a9955;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+#app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+#stage{flex:1;position:relative;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.hud{position:absolute;font-size:10px;color:var(--dim);line-height:1.5}
+#pct{top:10px;right:14px;color:var(--accent)}
+#info{left:14px;bottom:8px}
+#run{right:14px;bottom:8px}
+#code{height:34%;border-top:1px solid #1a1a1a;padding:10px 14px;font-size:11px;line-height:1.45;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;white-space:pre;position:relative}
+#code::before{content:"";position:absolute;inset:0 0 auto;height:40%;background:linear-gradient(#000,transparent);pointer-events:none}
+.k{color:var(--kw)}.f{color:var(--fn)}.n{color:var(--num)}.c{color:var(--cm)}
+.cur{background:var(--accent);color:var(--accent)}
+
+#proposal {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: rgba(10, 10, 10, 0.75);
+  padding: 25px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 107, 138, 0.3);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  width: 80%;
+  max-width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+#proposal h1 {
+  font-size: 1.25rem;
+  margin: 0 0 25px 0;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.4;
+}
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+.btn {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--dim);
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+#btn-mau {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+#btn-mau:hover {
+  box-shadow: 0 0 15px var(--accent);
+}
+#btn-nggak {
+  background: rgba(255,255,255,0.1);
+}
+#btn-wa {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #25D366;
+  color: #000;
+  text-decoration: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: 0.2s ease;
+}
+#btn-wa:hover { box-shadow: 0 0 15px #25D366; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="c"></canvas>
+    
+    <div id="proposal">
+      <h1 id="question">Nana, maukah kamu jadi pacarku?</h1>
+      <div class="btn-group" id="btn-group">
+        <button id="btn-mau" class="btn">Mau</button>
+        <button id="btn-nggak" class="btn">Nggak</button>
+      </div>
+      <a id="btn-wa" href="#" target="_blank" rel="noopener">💬 Kirim jawaban ke WhatsApp</a>
+    </div>
+
+    <div class="hud" id="pct"></div>
+    <div class="hud" id="info"></div>
+    <div class="hud" id="run"></div>
+  </div>
+  <div id="code"><span id="src"></span></div>
+</div>
+<script>
+const SRC = `import numpy as np
+TAU = np.pi * 2
+
+def band():
+    # cincin: torus tipis, digambar dari bawah
+    a, b = rng.random((2, 2200)) * TAU
+    r = 1 + 0.1 * np.cos(b)
+    return np.c_[r*np.cos(a), r*np.sin(a), 0.1*np.sin(b)]
+
+def prongs():
+    # empat cakar naik dari band ke girdle
+    for i in range(4):
+        a = TAU * (i + 0.5) / 4
+        tip = [0.4*np.cos(a), 1.45, 0.4*np.sin(a)]
+        line(base, tip, n=60)
+
+def diamond():
+    # delapan sisi: crown, table, pavilion
+    for j in range(8):
+        facet(girdle[j], girdle[j+1], table)
+        facet(girdle[j], girdle[j+1], culet)
+
+def lights(t):
+    key = [0.5, 0.8, 0.6]
+    sparkle = np.sin(t * 3 + facet_id)
+
+def draw_order(t):
+    # band dulu, lalu cakar, lalu berlian terisi dari ujung bawah
+    return band_t, prong_t, gem_t
+
+while True:
+    spin(t); render(points)
+`;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const TAU=Math.PI*2, T=18;
+let W,H,dpr;
+function fit(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',fit);fit();
+
+let seed=7;function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+const LET="DIAMONDringlove".split('');
+const P=[];
+function add(x,y,z,nx,ny,nz,t,k,f){const l=Math.hypot(nx,ny,nz)||1;P.push({x,y,z,nx:nx/l,ny:ny/l,nz:nz/l,t,k,f:f||0,ch:LET[(rnd()*LET.length)|0]})}
+
+for(let i=0;i<2400;i++){
+  const a=rnd()*TAU,b=rnd()*TAU,r=1+0.1*Math.cos(b);
+  let d=Math.abs(((a+Math.PI/2+Math.PI*3)%TAU)-Math.PI)/Math.PI; d=1-d;
+  add(r*Math.cos(a),r*Math.sin(a),0.1*Math.sin(b),Math.cos(b)*Math.cos(a),Math.cos(b)*Math.sin(a),Math.sin(b),d*3,0);
+}
+for(let k=0;k<4;k++){const a=TAU*(k+0.5)/4;
+  for(let i=0;i<70;i++){const s=rnd(),w=0.08+0.32*s;
+    add(w*Math.cos(a)+(rnd()-.5)*0.02,1.02+0.43*s,w*Math.sin(a)+(rnd()-.5)*0.02,Math.cos(a),0.3,Math.sin(a),3+s,1);}
+}
+const oct=(s)=>{const j=Math.floor(s)%8,u=s-Math.floor(s),a0=j*Math.PI/4,a1=(j+1)*Math.PI/4;
+  return [Math.cos(a0)*(1-u)+Math.cos(a1)*u,Math.sin(a0)*(1-u)+Math.sin(a1)*u,(j+0.5)*Math.PI/4,j]};
+const Rg=0.45,Rt=0.26;
+for(let i=0;i<800;i++){const s=rnd()*8,w=rnd(),[px,pz,phi,j]=oct(s),r=Rg+(Rt-Rg)*w,y=1.45+0.27*w;
+  add(px*r,y,pz*r,Math.cos(phi),0.9,Math.sin(phi),4+(y-1.2)/0.52*2,2,j*2);}
+for(let i=0;i<800;i++){const s=rnd()*8,w=rnd(),[px,pz,phi,j]=oct(s),r=Rg*(1-w),y=1.45-0.25*w;
+  add(px*r,y,pz*r,Math.cos(phi),-0.9,Math.sin(phi),4+(y-1.2)/0.52*2,2,j*2+1);}
+for(let i=0;i<260;i++){const s=rnd()*8,w=Math.sqrt(rnd()),[px,pz]=oct(s);
+  add(px*Rt*w,1.72,pz*Rt*w,0,1,0,5.8+rnd()*0.3,2,16);}
+for(let i=0;i<220;i++){const a=rnd()*TAU,b=Math.acos(2*rnd()-1),r=1.25+rnd()*0.7;
+  add(r*Math.sin(b)*Math.cos(a),0.3+r*Math.cos(b)*1.1,r*Math.sin(b)*Math.sin(a),0,1,0,1+rnd()*6,3);}
+const gemIdx=P.map((p,i)=>p.k===2?i:-1).filter(i=>i>=0);
+const glints=Array.from({length:6},(_,i)=>({i:gemIdx[(rnd()*gemIdx.length)|0],ph:rnd()*TAU,sp:1.5+rnd()*2}));
+
+const srcEl=document.getElementById('src'),pct=document.getElementById('pct'),info=document.getElementById('info'),run=document.getElementById('run');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function hl(s){return esc(s).split('\n').map(l=>{
+  if(/^\s*#/.test(l))return '<span class="c">'+l+'</span>';
+  return l.replace(/\b(import|as|def|for|in|while|True|return)\b/g,'<span class="k">$1</span>')
+          .replace(/\b(band|prongs|diamond|lights|draw_order|spin|render|facet|line|rng)(?=\()/g,'<span class="f">$1</span>')
+          .replace(/\b(\d+\.?\d*)\b/g,'<span class="n">$1</span>');}).join('\n')}
+
+const key=[0.5,0.8,0.6],kl=Math.hypot(...key);key.forEach((v,i)=>key[i]=v/kl);
+let last=performance.now(),fps=30,start=performance.now(),lastCode=-1;
+function frame(now){
+  const dt=now-last;last=now;fps+=(1000/Math.max(dt,1)-fps)*0.05;
+  const time=((now-start)/1000)%T, ang=time*0.9+0.4, ca=Math.cos(ang), sa=Math.sin(ang), tl=0.24, ct=Math.cos(tl), st=Math.sin(tl);
+  const fade=time>T-1.2?Math.max(0,(T-time)/1.2):1, S=Math.min(W*0.36,H*0.33);
+  cx.clearRect(0,0,W,H);cx.textAlign='center';cx.textBaseline='middle';
+  const out=[];let vis=0;
+  for(const p of P){
+    const a=Math.min(1,Math.max(0,(time-p.t)/0.35)); if(a<=0)continue; vis++;
+    const x=p.x*ca+p.z*sa, z0=-p.x*sa+p.z*ca, y=p.y*ct-z0*st, z=p.y*st+z0*ct;
+    const nx=p.nx*ca+p.nz*sa, nz0=-p.nx*sa+p.nz*ca, ny=p.ny*ct-nz0*st, nz=p.ny*st+nz0*ct;
+    let b=Math.max(0,nx*key[0]+ny*key[1]+nz*key[2]);
+    b=0.25+b*0.6+Math.pow(Math.max(0,nz),6)*0.2;
+    if(p.k===2){b*=0.55+0.9*(0.5+0.5*Math.sin(time*3+p.f*1.9))}
+    if(p.k===3)b=0.22;
+    if(p.k===1)b*=0.85;
+    const depth=0.6+0.4*(z+1.2)/2.4;
+    out.push([z,x,y,b*depth*a*fade,p.ch,p.k]);
+  }
+  out.sort((m,n)=>m[0]-n[0]);
+  for(const [z,x,y,b,ch,k] of out){
+    const v=Math.min(255,(b*300)|0), sz=k===3?7:(k===2?9.5:8.5);
+    cx.fillStyle=`rgba(${v},${v},${Math.min(255,v+14)},${Math.min(1,0.25+b)})`;
+    cx.font=`${sz}px ui-monospace,Menlo,monospace`;
+    cx.fillText(ch,W/2+x*S,H*0.5-(y-0.35)*S);
+  }
+  let g=0;
+  for(const gl of glints){const p=P[gl.i];if(time<p.t+0.4)continue;
+    const x=p.x*ca+p.z*sa,z0=-p.x*sa+p.z*ca,y=p.y*ct-z0*st,s=Math.max(0,Math.sin(time*gl.sp+gl.ph));
+    if(s<0.05)continue;g++;
+    const px=W/2+x*S,py=H*0.5-(y-0.35)*S,L=(6+22*s)*fade;
+    cx.strokeStyle=`rgba(255,255,255,${0.85*s*fade})`;cx.lineWidth=1;cx.beginPath();
+    cx.moveTo(px-L,py);cx.lineTo(px+L,py);cx.moveTo(px,py-L*1.4);cx.lineTo(px,py+L*1.4);
+    cx.moveTo(px-L*.5,py-L*.5);cx.lineTo(px+L*.5,py+L*.5);cx.moveTo(px-L*.5,py+L*.5);cx.lineTo(px+L*.5,py-L*.5);cx.stroke();
+  }
+  pct.textContent='● t '+(time/T*100).toFixed(1)+'%';
+  info.innerHTML='rotation '+(((ang*180/Math.PI)%360)).toFixed(0)+'°<br>glints &nbsp;'+g+'<br>letters '+vis.toLocaleString('id-ID');
+  run.textContent='berjalan · '+Math.round(fps)+' fps';
+  const n=Math.min(SRC.length,Math.floor(time/(T-3)*SRC.length*1.05));
+  if(n!==lastCode){lastCode=n;srcEl.innerHTML=hl(SRC.slice(0,n))+'<span class="cur"> </span>';}
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+const btnNggak = document.getElementById('btn-nggak');
+const btnMau = document.getElementById('btn-mau');
+const question = document.getElementById('question');
+const btnGroup = document.getElementById('btn-group');
+const proposalBox = document.getElementById('proposal');
+const btnWa = document.getElementById('btn-wa');
+
+// Ganti dengan nomor WhatsApp tujuan (format internasional, tanpa +, spasi, atau 0 di depan)
+const WA_NUMBER = '6285179761361';
+const WA_TEXT = 'Aku mau jadi pacarmu! ❤️ - Nana';
+btnWa.href = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(WA_TEXT);
+
+const moveNoButton = (e) => {
+  e.preventDefault();
+  const maxX = window.innerWidth - btnNggak.offsetWidth - 20;
+  const maxY = window.innerHeight - btnNggak.offsetHeight - 20;
+  const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+  const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+  
+  btnNggak.style.position = 'fixed';
+  btnNggak.style.left = randomX + 'px';
+  btnNggak.style.top = randomY + 'px';
+};
+
+btnNggak.addEventListener('mouseover', moveNoButton);
+btnNggak.addEventListener('touchstart', moveNoButton);
+btnNggak.addEventListener('click', moveNoButton);
+
+btnMau.addEventListener('click', () => {
+  question.innerHTML = 'Yeay! I love you, Nana! ❤️';
+  btnGroup.style.display = 'none';
+  btnWa.style.display = 'flex';
+  proposalBox.style.border = '1px solid #ff6b8a';
+  
+  LET.length = 0; 
+  LET.push(...'NANAlove'.split(''));
+  
+  P.forEach(p => {
+    p.ch = LET[Math.floor(Math.random() * LET.length)];
+  });
+});
+</script>
+</body>
+</html>
